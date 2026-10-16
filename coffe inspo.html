@@ -1,0 +1,1604 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#FAF6F1" />
+    <meta
+      name="description"
+      content="caffe Coffee Co. — small-batch coffee, slow roasted in Lagos. Three neighbourhood cafés, one very good cup."
+    />
+    <title>caffe Coffee Co. — Coffee worth slowing down for</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..800;1,9..144,300..700&family=Inter:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              espresso: "#1B1310",
+              roast: "#2C201A",
+              bark: "#4A382E",
+              crema: "#C08552",
+              caramel: "#A26B3C",
+              cream: "#FAF6F1",
+              paper: "#F2E9DD",
+              latte: "#DFCDB6",
+            },
+            fontFamily: {
+              display: ["Fraunces", "Georgia", "serif"],
+              sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      html {
+        scroll-behavior: smooth;
+        -webkit-text-size-adjust: 100%;
+      }
+      body {
+        background: #faf6f1;
+        overflow-x: hidden;
+      }
+      ::selection {
+        background: rgba(192, 133, 82, 0.28);
+      }
+      ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #f2e9dd;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #d3b899;
+        border-radius: 999px;
+        border: 3px solid #f2e9dd;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #c08552;
+      }
+      .no-bar::-webkit-scrollbar {
+        display: none;
+      }
+      #boot {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        background: #faf6f1;
+        z-index: 999;
+        transition: opacity 0.5s ease;
+        font-family: Inter, sans-serif;
+        color: #a26b3c;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        font-size: 11px;
+      }
+      #boot.hide {
+        opacity: 0;
+        pointer-events: none;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="boot">Brewing…</div>
+    <div id="root"></div>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react@18.3.1",
+          "react/jsx-runtime": "https://esm.sh/react@18.3.1/jsx-runtime",
+          "react-dom": "https://esm.sh/react-dom@18.3.1",
+          "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
+          "framer-motion": "https://esm.sh/framer-motion@11.11.17?external=react,react-dom",
+          "lucide-react": "https://esm.sh/lucide-react@0.454.0?external=react"
+        }
+      }
+    </script>
+
+    <script src="https://unpkg.com/@babel/standalone@7.25.9/babel.min.js"></script>
+
+    <script type="text/babel" data-type="module" data-presets="react">
+      import React, { useState, useRef, useEffect, useCallback } from "react";
+      import { createRoot } from "react-dom/client";
+      import {
+        motion,
+        AnimatePresence,
+        useScroll,
+        useSpring,
+        useTransform,
+        useMotionValue,
+      } from "framer-motion";
+      import {
+        Coffee,
+        MapPin,
+        Phone,
+        Mail,
+        Clock,
+        Copy,
+        Check,
+        ArrowRight,
+        ArrowUpRight,
+        Instagram,
+        Menu as MenuIcon,
+        X,
+        Leaf,
+        Flame,
+        Droplet,
+        Star,
+        MoveHorizontal,
+      } from "lucide-react";
+
+      /* ------------------------------------------------------------------ */
+      /*  TOKENS & DATA                                                      */
+      /* ------------------------------------------------------------------ */
+
+      const EASE = [0.22, 1, 0.36, 1];
+
+      const fadeUp = {
+        hidden: { opacity: 0, y: 30 },
+        show: { opacity: 1, y: 0, transition: { duration: 0.75, ease: EASE } },
+      };
+
+      const stagger = {
+        hidden: {},
+        show: { transition: { staggerChildren: 0.09, delayChildren: 0.05 } },
+      };
+
+      const PHONE = "+234 803 555 0142";
+      const PHONE_HREF = "tel:+2348035550142";
+      const EMAIL = "hello@loopcoffee.ng";
+
+      const NAV_LINKS = [
+        { label: "Story", href: "#story" },
+        { label: "Menu", href: "#menu" },
+        { label: "Gallery", href: "#gallery" },
+        { label: "Cafés", href: "#locations" },
+        { label: "Contact", href: "#contact" },
+      ];
+
+      const STORY_CHAPTERS = [
+        {
+          icon: Leaf,
+          tag: "01 — The source",
+          title: "Fourteen farms. Zero middlemen.",
+          body:
+            "We buy direct from fourteen smallholder farms across Ethiopia, Colombia and Guatemala — plus one very special lot from the Mambilla Plateau in Taraba. Multi-year contracts, prices well above the fair-trade floor, and a standing invitation to visit whenever they like.",
+        },
+        {
+          icon: Flame,
+          tag: "02 — The roast",
+          title: "A 12-kilo drum and a very patient roaster.",
+          body:
+            "Everything is roasted in-house in Lekki on a 1974 Probat we rebuilt ourselves. Small batches, three roast profiles, and a full cupping table every Tuesday morning. If it doesn't taste right, it doesn't leave the building.",
+        },
+        {
+          icon: Droplet,
+          tag: "03 — The pour",
+          title: "Dialled in twice a day, every day.",
+          body:
+            "Every grinder is recalibrated before the morning rush and again at 2pm. We log extraction yields, TDS and shot times. It sounds obsessive because it is — consistency is the whole craft.",
+        },
+        {
+          icon: Coffee,
+          tag: "04 — The caffe",
+          title: "Grounds back to the gardens.",
+          body:
+            "Spent grounds go to community gardens in Lekki and Yaba. Cups are compostable, lids are not plastic, and the milk comes from a dairy farm out in Ogun State — about an hour up the road. The name isn't just a shape.",
+        },
+      ];
+
+      const FOUNDER_QUOTE =
+        "I opened caffe because Lagos already has enough places to be in a hurry. I wanted somewhere the coffee was the point — not the wifi, not the aesthetic, not the queue. Just a genuinely great cup, made by people who care, in a room you don't want to leave.";
+
+      const MENU = {
+        Espresso: {
+          image:
+            "https://images.unsplash.com/photo-1510707577719-ae7c14805e3a?auto=format&fit=crop&w=1000&q=80",
+          blurb: "Pulled on a Linea Mini. 18g in, 36g out, 27 seconds.",
+          items: [
+            { name: "Espresso", desc: "Single or double. Chocolate, cherry, brown sugar.", price: "2,000" },
+            { name: "Macchiato", desc: "Double shot, a spoon of silky microfoam.", price: "2,200" },
+            { name: "Cortado", desc: "Equal parts espresso and steamed milk.", price: "2,800" },
+            { name: "Flat White", desc: "Our house blend, 6oz, poured tight.", price: "3,200" },
+            { name: "Cappuccino", desc: "Dry, dusted, unapologetically traditional.", price: "3,200" },
+            { name: "Mocha", desc: "70% dark chocolate, espresso, steamed milk.", price: "3,800" },
+          ],
+        },
+        Filter: {
+          image:
+            "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1000&q=80",
+          blurb: "Single origin, brewed to order. V60 or batch, your call.",
+          items: [
+            { name: "Batch Brew", desc: "Today's rotating single origin. Bottomless.", price: "2,200" },
+            { name: "V60 Pour Over", desc: "Hand poured, 4 minutes, worth every one.", price: "3,800" },
+            { name: "Chemex (for two)", desc: "A full 600ml carafe to share.", price: "7,000" },
+            { name: "Cold Brew", desc: "18-hour steep, served over a big rock.", price: "3,200" },
+            { name: "Nitro Cold Brew", desc: "On tap, cascading, no dairy required.", price: "3,800" },
+            { name: "Cascara Fizz", desc: "Coffee cherry, citrus, sparkling water.", price: "3,500" },
+          ],
+        },
+        Signature: {
+          image:
+            "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=1000&q=80",
+          blurb: "The drinks you can only get here. Rotated every season.",
+          items: [
+            { name: "The Loop", desc: "Espresso, palm sugar, smoked sea salt, oat.", price: "4,200" },
+            { name: "Tiger Nut Latte", desc: "Kunun aya, espresso, cinnamon, whole milk.", price: "4,000" },
+            { name: "Zobo Espresso Tonic", desc: "Hibiscus, tonic, orange peel, double shot.", price: "3,800" },
+            { name: "Palm Sugar Cortado", desc: "Cortado sweetened with fresh palm sugar.", price: "3,800" },
+            { name: "Black Sesame Mocha", desc: "Toasted sesame, dark chocolate, espresso.", price: "4,500" },
+            { name: "Affogato", desc: "Vanilla gelato drowned in a double.", price: "4,200" },
+          ],
+        },
+        Bakery: {
+          image:
+            "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=1000&q=80",
+          blurb: "Baked at 4am, twenty minutes away. Gone by noon, usually.",
+          items: [
+            { name: "Butter Croissant", desc: "72-hour lamination. Shatters properly.", price: "2,500" },
+            { name: "Puff-Puff (6)", desc: "Fried to order, dusted with cinnamon sugar.", price: "1,800" },
+            { name: "Meat Pie", desc: "Beef, potato, carrot. Hand-crimped, flaky.", price: "2,200" },
+            { name: "Chin Chin", desc: "Crunchy, nutmeg-heavy, dangerously moreish.", price: "2,000" },
+            { name: "Agege Bread Toast", desc: "Thick-cut, salted butter, honey on the side.", price: "2,500" },
+            { name: "Breakfast Sandwich", desc: "Egg, aged cheddar, chilli crisp, brioche.", price: "5,500" },
+          ],
+        },
+      };
+
+      const GALLERY = [
+        {
+          src: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=900&q=80",
+          caption: "Morning pour at Lekki",
+          likes: "1,204",
+        },
+        {
+          src: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=900&q=80",
+          caption: "The corner table, 7:40am",
+          likes: "892",
+        },
+        {
+          src: "https://images.unsplash.com/photo-1442512595331-e89e73853f31?auto=format&fit=crop&w=900&q=80",
+          caption: "Tuesday cupping table",
+          likes: "1,577",
+        },
+        {
+          src: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=900&q=80",
+          caption: "Latte art practice, round 40",
+          likes: "2,310",
+        },
+        {
+          src: "https://images.unsplash.com/photo-1521017432531-fbd92d768814?auto=format&fit=crop&w=900&q=80",
+          caption: "Roastery floor, Lekki Phase 1",
+          likes: "1,048",
+        },
+        {
+          src: "https://images.unsplash.com/photo-1453614512568-c4024d13c247?auto=format&fit=crop&w=900&q=80",
+          caption: "New beans, just landed",
+          likes: "764",
+        },
+        {
+          src: "https://images.unsplash.com/photo-1498804103079-a6351b050096?auto=format&fit=crop&w=900&q=80",
+          caption: "Sunday afternoon light",
+          likes: "1,921",
+        },
+        {
+          src: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=900&q=80",
+          caption: "Closing up on the Island",
+          likes: "688",
+        },
+      ];
+
+      const LOCATIONS = [
+        {
+          name: "Lekki",
+          address: "12B Admiralty Way, Lekki Phase 1, Lagos",
+          hours: "Mon–Sun · 7:00am – 9:00pm",
+          note: "Original café. Roastery visible from the bar.",
+          maps: "https://maps.google.com/?q=12B+Admiralty+Way+Lekki+Phase+1+Lagos",
+        },
+        {
+          name: "Yaba",
+          address: "48 Herbert Macaulay Way, Yaba, Lagos",
+          hours: "Mon–Sat · 7:00am – 8:00pm",
+          note: "Big windows, long bench, best light on the mainland.",
+          maps: "https://maps.google.com/?q=48+Herbert+Macaulay+Way+Yaba+Lagos",
+        },
+        {
+          name: "Victoria Island",
+          address: "3 Adeola Odeku Street, Victoria Island, Lagos",
+          hours: "Mon–Fri · 6:30am – 7:00pm",
+          note: "Walk-up window and a very small, very good bench.",
+          maps: "https://maps.google.com/?q=3+Adeola+Odeku+Street+Victoria+Island+Lagos",
+        },
+      ];
+
+      /* ------------------------------------------------------------------ */
+      /*  SHARED UI                                                          */
+      /* ------------------------------------------------------------------ */
+
+      function SectionHead({ eyebrow, title, sub, invert = false, align = "left" }) {
+        return (
+          <motion.div
+            variants={stagger}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.4 }}
+            className={`max-w-2xl ${align === "center" ? "mx-auto text-center" : ""}`}
+          >
+            <motion.span
+              variants={fadeUp}
+              className={`inline-flex items-center gap-3 text-[11px] uppercase tracking-[0.24em] font-medium ${
+                invert ? "text-latte" : "text-caramel"
+              }`}
+            >
+              <span className={`h-px w-8 ${invert ? "bg-latte/50" : "bg-caramel/50"}`} />
+              {eyebrow}
+            </motion.span>
+            <motion.h2
+              variants={fadeUp}
+              className={`mt-5 font-display text-[2.1rem] leading-[1.06] tracking-[-0.02em] sm:text-5xl lg:text-[3.4rem] ${
+                invert ? "text-cream" : "text-espresso"
+              }`}
+            >
+              {title}
+            </motion.h2>
+            {sub && (
+              <motion.p
+                variants={fadeUp}
+                className={`mt-6 text-base leading-relaxed sm:text-[1.0625rem] ${
+                  invert ? "text-cream/65" : "text-bark/70"
+                }`}
+              >
+                {sub}
+              </motion.p>
+            )}
+          </motion.div>
+        );
+      }
+
+      /* ------------------------------------------------------------------ */
+      /*  SCROLL PROGRESS                                                    */
+      /* ------------------------------------------------------------------ */
+
+      function ScrollBar() {
+        const { scrollYProgress } = useScroll();
+        const scaleX = useSpring(scrollYProgress, {
+          stiffness: 140,
+          damping: 30,
+          restDelta: 0.001,
+        });
+        return (
+          <motion.div
+            style={{ scaleX }}
+            className="fixed inset-x-0 top-0 z-[70] h-[3px] origin-left bg-gradient-to-r from-caramel via-crema to-latte"
+          />
+        );
+      }
+
+      /* ------------------------------------------------------------------ */
+      /*  NAV                                                                */
+      /* ------------------------------------------------------------------ */
+
+      function Nav() {
+        const [scrolled, setScrolled] = useState(false);
+        const [open, setOpen] = useState(false);
+
+        useEffect(() => {
+          const onScroll = () => setScrolled(window.scrollY > 24);
+          onScroll();
+          window.addEventListener("scroll", onScroll, { passive: true });
+          return () => window.removeEventListener("scroll", onScroll);
+        }, []);
+
+        useEffect(() => {
+          document.body.style.overflow = open ? "hidden" : "";
+          return () => {
+            document.body.style.overflow = "";
+          };
+        }, [open]);
+
+        return (
+          <>
+            <motion.header
+              initial={{ y: -90, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.8, ease: EASE, delay: 0.1 }}
+              className={`fixed inset-x-0 top-0 z-[60] transition-all duration-500 ${
+                scrolled
+                  ? "border-b border-espresso/10 bg-cream/85 py-3 backdrop-blur-xl"
+                  : "border-b border-transparent py-5"
+              }`}
+            >
+              <div className="mx-auto flex max-w-7xl items-center justify-between px-6 sm:px-8 lg:px-12">
+                <a href="#top" className="group flex items-center gap-2.5">
+                  <span className="grid h-9 w-9 place-items-center rounded-full bg-espresso text-cream transition-transform duration-500 group-hover:rotate-12">
+                    <Coffee size={17} strokeWidth={2} />
+                  </span>
+                  <span className="font-display text-[1.15rem] font-semibold tracking-[-0.01em] text-espresso">
+                    Caffe<span className="text-caramel">.</span>
+                  </span>
+                </a>
+
+                <nav className="hidden items-center gap-9 md:flex">
+                  {NAV_LINKS.map((l) => (
+                    <a
+                      key={l.href}
+                      href={l.href}
+                      className="group relative text-[13px] font-medium tracking-wide text-bark/80 transition-colors hover:text-espresso"
+                    >
+                      {l.label}
+                      <span className="absolute -bottom-1 left-0 h-px w-0 bg-caramel transition-all duration-300 group-hover:w-full" />
+                    </a>
+                  ))}
+                </nav>
+
+                <div className="flex items-center gap-3">
+                  <a
+                    href="#locations"
+                    className="hidden items-center gap-2 rounded-full bg-espresso px-5 py-2.5 text-[12.5px] font-medium tracking-wide text-cream transition-all duration-300 hover:bg-caramel hover:shadow-lg hover:shadow-caramel/25 sm:inline-flex"
+                  >
+                    Find a café
+                    <ArrowRight size={14} />
+                  </a>
+                  <button
+                    aria-label="Toggle menu"
+                    onClick={() => setOpen((v) => !v)}
+                    className="grid h-10 w-10 place-items-center rounded-full border border-espresso/12 text-espresso transition-colors hover:bg-espresso hover:text-cream md:hidden"
+                  >
+                    {open ? <X size={17} /> : <MenuIcon size={17} />}
+                  </button>
+                </div>
+              </div>
+            </motion.header>
+
+            <AnimatePresence>
+              {open && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="fixed inset-0 z-[59] bg-cream pt-24 md:hidden"
+                >
+                  <motion.nav
+                    initial="hidden"
+                    animate="show"
+                    variants={{ hidden: {}, show: { transition: { staggerChildren: 0.06 } } }}
+                    className="flex flex-col gap-1 px-6"
+                  >
+                    {NAV_LINKS.map((l) => (
+                      <motion.a
+                        key={l.href}
+                        href={l.href}
+                        onClick={() => setOpen(false)}
+                        variants={{
+                          hidden: { opacity: 0, x: -20 },
+                          show: { opacity: 1, x: 0, transition: { duration: 0.45, ease: EASE } },
+                        }}
+                        className="border-b border-espresso/8 py-5 font-display text-3xl tracking-[-0.01em] text-espresso"
+                      >
+                        {l.label}
+                      </motion.a>
+                    ))}
+                    <motion.a
+                      href={PHONE_HREF}
+                      variants={{
+                        hidden: { opacity: 0, x: -20 },
+                        show: { opacity: 1, x: 0, transition: { duration: 0.45, ease: EASE } },
+                      }}
+                      className="mt-8 inline-flex items-center gap-3 text-sm font-medium text-caramel"
+                    >
+                      <Phone size={15} /> {PHONE}
+                    </motion.a>
+                  </motion.nav>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </>
+        );
+      }
+
+      /* ------------------------------------------------------------------ */
+      /*  STIR CUP — the hero interaction                                    */
+      /* ------------------------------------------------------------------ */
+
+      function StirCup() {
+        const x = useMotionValue(0);
+        const springCfg = { stiffness: 150, damping: 17, mass: 0.6 };
+
+        const tilt = useSpring(useTransform(x, [-150, 150], [-15, 15]), springCfg);
+        const swirl = useSpring(useTransform(x, [-150, 150], [-280, 280]), {
+          stiffness: 70,
+          damping: 18,
+        });
+        const surfaceShift = useSpring(useTransform(x, [-150, 150], [-9, 9]), springCfg);
+        const cremaShift = useSpring(useTransform(x, [-150, 150], [12, -12]), springCfg);
+
+        const [stirred, setStirred] = useState(false);
+        const [toast, setToast] = useState(false);
+        const timer = useRef(null);
+
+        const onStir = useCallback(() => {
+          setStirred(true);
+          setToast(true);
+          clearTimeout(timer.current);
+          timer.current = setTimeout(() => setToast(false), 1500);
+        }, []);
+
+        useEffect(() => () => clearTimeout(timer.current), []);
+
+        const bodyPath =
+          "M74 130 L246 130 L222 262 Q218 286 194 286 L126 286 Q102 286 98 262 Z";
+
+        return (
+          <div className="relative mx-auto w-full max-w-[430px]">
+            <div className="pointer-events-none absolute inset-0 -z-10">
+              <div className="absolute left-1/2 top-1/2 h-[380px] w-[380px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-crema/18 blur-[90px]" />
+            </div>
+
+            <motion.div
+              drag="x"
+              dragConstraints={{ left: -150, right: 150 }}
+              dragElastic={0.22}
+              dragSnapToOrigin
+              dragTransition={{ bounceStiffness: 220, bounceDamping: 20 }}
+              onDragStart={onStir}
+              onDrag={onStir}
+              style={{ x }}
+              whileTap={{ scale: 0.985 }}
+              className="relative cursor-grab touch-none select-none active:cursor-grabbing"
+            >
+              <svg viewBox="0 0 320 360" className="h-auto w-full">
+                <defs>
+                  <linearGradient id="porcelain" x1="0" y1="0" x2="0.35" y2="1">
+                    <stop offset="0%" stopColor="#FFFFFF" />
+                    <stop offset="55%" stopColor="#F7EFE4" />
+                    <stop offset="100%" stopColor="#E6D6C1" />
+                  </linearGradient>
+                  <linearGradient id="interior" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#DCC9B1" />
+                    <stop offset="100%" stopColor="#EFE3D3" />
+                  </linearGradient>
+                  <linearGradient id="coffee" x1="0" y1="0" x2="0.3" y2="1">
+                    <stop offset="0%" stopColor="#7A4A28" />
+                    <stop offset="60%" stopColor="#4A2A18" />
+                    <stop offset="100%" stopColor="#241209" />
+                  </linearGradient>
+                  <linearGradient id="crema" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#E0B37C" />
+                    <stop offset="50%" stopColor="#C08552" />
+                    <stop offset="100%" stopColor="#9C6537" />
+                  </linearGradient>
+                  <clipPath id="cupClip">
+                    <path d={bodyPath} />
+                  </clipPath>
+                </defs>
+
+                <g>
+                  {[0, 1, 2].map((i) => (
+                    <motion.path
+                      key={i}
+                      d={`M${136 + i * 24} 106 c -9 -14 9 -22 0 -36 c -9 -14 9 -22 0 -34`}
+                      fill="none"
+                      stroke="#C08552"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: [0, 0.42, 0], y: [6, -10, -22] }}
+                      transition={{
+                        duration: 4.2,
+                        repeat: Infinity,
+                        delay: i * 0.85,
+                        ease: "easeInOut",
+                      }}
+                    />
+                  ))}
+                </g>
+
+                <ellipse cx="160" cy="320" rx="120" ry="19" fill="#1B1310" opacity="0.07" />
+                <ellipse
+                  cx="160"
+                  cy="312"
+                  rx="116"
+                  ry="19"
+                  fill="#F3E9DC"
+                  stroke="#E2D2BD"
+                  strokeWidth="2.5"
+                />
+
+                <path
+                  d="M236 162 Q 302 172 296 212 Q 290 252 226 258"
+                  fill="none"
+                  stroke="#E4D5C1"
+                  strokeWidth="27"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M236 162 Q 302 172 296 212 Q 290 252 226 258"
+                  fill="none"
+                  stroke="#F7EFE4"
+                  strokeWidth="16"
+                  strokeLinecap="round"
+                />
+
+                <path d={bodyPath} fill="url(#porcelain)" />
+                <ellipse cx="160" cy="130" rx="86" ry="22" fill="url(#interior)" />
+
+                <g clipPath="url(#cupClip)">
+                  <motion.g style={{ x: surfaceShift }}>
+                    <rect x="50" y="146" width="220" height="160" fill="url(#coffee)" />
+                  </motion.g>
+
+                  <motion.g
+                    style={{
+                      rotate: tilt,
+                      transformBox: "fill-box",
+                      transformOrigin: "center",
+                    }}
+                  >
+                    <ellipse cx="160" cy="146" rx="84" ry="20" fill="url(#crema)" />
+                    <ellipse cx="160" cy="146" rx="84" ry="20" fill="#1B1310" opacity="0.06" />
+                  </motion.g>
+
+                  <motion.g
+                    style={{
+                      rotate: swirl,
+                      transformBox: "fill-box",
+                      transformOrigin: "center",
+                    }}
+                    opacity="0.55"
+                  >
+                    <ellipse
+                      cx="160"
+                      cy="147"
+                      rx="54"
+                      ry="12"
+                      fill="none"
+                      stroke="#F3DDC0"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeDasharray="42 26"
+                    />
+                    <ellipse
+                      cx="160"
+                      cy="147"
+                      rx="29"
+                      ry="6.5"
+                      fill="none"
+                      stroke="#F7E7D2"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeDasharray="22 16"
+                    />
+                  </motion.g>
+
+                  <motion.ellipse
+                    cx="160"
+                    cy="140"
+                    rx="46"
+                    ry="9"
+                    fill="#F0D3AC"
+                    opacity="0.35"
+                    style={{ x: cremaShift }}
+                  />
+                </g>
+
+                <path
+                  d={bodyPath}
+                  fill="none"
+                  stroke="#DECDB7"
+                  strokeWidth="3"
+                  strokeLinejoin="round"
+                />
+                <ellipse
+                  cx="160"
+                  cy="130"
+                  rx="86"
+                  ry="22"
+                  fill="none"
+                  stroke="#DECDB7"
+                  strokeWidth="3"
+                />
+              </svg>
+
+              <AnimatePresence>
+                {toast && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8, scale: 0.92 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.96 }}
+                    transition={{ duration: 0.3, ease: EASE }}
+                    className="pointer-events-none absolute -top-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-espresso px-4 py-2 text-[11px] font-medium uppercase tracking-[0.16em] text-cream shadow-xl"
+                  >
+                    Perfectly stirred
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+
+            <AnimatePresence>
+              {!stirred && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  transition={{ duration: 0.5, ease: EASE, delay: 1.1 }}
+                  className="pointer-events-none absolute inset-x-0 -bottom-2 flex justify-center"
+                >
+                  <motion.span
+                    animate={{ x: [-6, 6, -6] }}
+                    transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+                    className="inline-flex items-center gap-2 rounded-full border border-espresso/12 bg-cream/80 px-4 py-2 text-[11px] font-medium uppercase tracking-[0.16em] text-bark/70 backdrop-blur"
+                  >
+                    <MoveHorizontal size={13} className="text-caramel" />
+                    Drag to stir
+                  </motion.span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        );
+      }
+
+      /* ------------------------------------------------------------------ */
+      /*  HERO                                                               */
+      /* ------------------------------------------------------------------ */
+
+      function Hero() {
+        return (
+          <section
+            id="top"
+            className="relative overflow-hidden px-6 pb-20 pt-32 sm:px-8 sm:pt-36 lg:px-12 lg:pb-28 lg:pt-40"
+          >
+            <div className="pointer-events-none absolute inset-0 -z-10">
+              <div className="absolute -left-40 top-10 h-[520px] w-[520px] rounded-full bg-latte/35 blur-[120px]" />
+              <div className="absolute -right-32 top-1/3 h-[440px] w-[440px] rounded-full bg-crema/18 blur-[110px]" />
+              <div className="absolute bottom-0 left-1/3 h-[320px] w-[320px] rounded-full bg-paper blur-[90px]" />
+            </div>
+
+            <div className="mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[1.05fr_1fr] lg:gap-10">
+              <motion.div
+                variants={stagger}
+                initial="hidden"
+                animate="show"
+                className="order-2 lg:order-1"
+              >
+                <motion.div
+                  variants={fadeUp}
+                  className="inline-flex items-center gap-2.5 rounded-full border border-espresso/10 bg-cream/70 px-4 py-2 backdrop-blur"
+                >
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-crema opacity-70" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-caramel" />
+                  </span>
+                  <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-bark/75">
+                    Roasting daily in Lagos, Nigeria
+                  </span>
+                </motion.div>
+
+                <motion.h1
+                  variants={fadeUp}
+                  className="mt-7 font-display text-[2.9rem] leading-[0.98] tracking-[-0.03em] text-espresso sm:text-[3.8rem] lg:text-[4.6rem]"
+                >
+                  Coffee worth
+                  <br />
+                  <span className="italic text-caramel">slowing</span> down for.
+                </motion.h1>
+
+                <motion.p
+                  variants={fadeUp}
+                  className="mt-7 max-w-lg text-[1.0625rem] leading-relaxed text-bark/72"
+                >
+                  Small-batch roasting, direct-trade beans and three neighbourhood
+                  cafés across Lagos that feel like someone's living room. No rush.
+                  No queue anxiety. Just a very good cup, made properly.
+                </motion.p>
+
+                <motion.div variants={fadeUp} className="mt-9 flex flex-wrap items-center gap-3">
+                  <a
+                    href="#menu"
+                    className="group inline-flex items-center gap-2.5 rounded-full bg-espresso px-7 py-3.5 text-[13.5px] font-medium tracking-wide text-cream transition-all duration-300 hover:bg-caramel hover:shadow-xl hover:shadow-caramel/25"
+                  >
+                    Explore the menu
+                    <ArrowRight
+                      size={15}
+                      className="transition-transform duration-300 group-hover:translate-x-1"
+                    />
+                  </a>
+                  <a
+                    href="#locations"
+                    className="group inline-flex items-center gap-2.5 rounded-full border border-espresso/15 px-7 py-3.5 text-[13.5px] font-medium tracking-wide text-espresso transition-all duration-300 hover:border-espresso/40 hover:bg-espresso/5"
+                  >
+                    <MapPin size={15} className="text-caramel" />
+                    Find a café
+                  </a>
+                </motion.div>
+
+                <motion.div
+                  variants={fadeUp}
+                  className="mt-12 grid max-w-lg grid-cols-3 gap-6 border-t border-espresso/10 pt-7"
+                >
+                  {[
+                    { n: "14", l: "Partner farms" },
+                    { n: "3", l: "Lagos cafés" },
+                    { n: "9", l: "Years roasting" },
+                  ].map((s) => (
+                    <div key={s.l}>
+                      <div className="font-display text-3xl tracking-[-0.02em] text-espresso">
+                        {s.n}
+                      </div>
+                      <div className="mt-1 text-[11px] uppercase tracking-[0.16em] text-bark/55">
+                        {s.l}
+                      </div>
+                    </div>
+                  ))}
+                </motion.div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, scale: 0.92, y: 24 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 1, ease: EASE, delay: 0.25 }}
+                className="order-1 lg:order-2"
+              >
+                <StirCup />
+              </motion.div>
+            </div>
+          </section>
+        );
+      }
+
+      /* ------------------------------------------------------------------ */
+      /*  STORY                                                              */
+      /* ------------------------------------------------------------------ */
+
+      function Story() {
+        const ref = useRef(null);
+        const { scrollYProgress } = useScroll({
+          target: ref,
+          offset: ["start 72%", "end 68%"],
+        });
+        const lineScale = useSpring(scrollYProgress, {
+          stiffness: 90,
+          damping: 30,
+          restDelta: 0.001,
+        });
+
+        return (
+          <section
+            id="story"
+            className="relative scroll-mt-24 bg-paper/60 px-6 py-24 sm:px-8 lg:px-12 lg:py-32"
+          >
+            <div className="mx-auto max-w-7xl">
+              <SectionHead
+                eyebrow="Our story"
+                title="From a single drum roaster to three front doors."
+                sub="Loop started in a garage in Lekki with a second-hand roaster and a very stubborn idea: that coffee should be traced, cared for and served without ceremony."
+              />
+
+              <div ref={ref} className="relative mt-20 lg:mt-28">
+                <div className="absolute bottom-0 left-[15px] top-0 w-px -translate-x-1/2 bg-espresso/10 md:left-1/2" />
+                <motion.div
+                  style={{ scaleY: lineScale }}
+                  className="absolute bottom-0 left-[15px] top-0 w-px origin-top -translate-x-1/2 bg-gradient-to-b from-caramel via-crema to-latte md:left-1/2"
+                />
+
+                <div className="space-y-14 md:space-y-24">
+                  {STORY_CHAPTERS.map((c, i) => {
+                    const Icon = c.icon;
+                    const right = i % 2 === 1;
+                    return (
+                      <motion.div
+                        key={c.title}
+                        variants={fadeUp}
+                        initial="hidden"
+                        whileInView="show"
+                        viewport={{ once: true, amount: 0.45 }}
+                        className={`relative pl-12 md:w-1/2 md:pl-0 ${
+                          right ? "md:ml-auto md:pl-16" : "md:pr-16 md:text-right"
+                        }`}
+                      >
+                        <span
+                          className={`absolute top-2 h-3.5 w-3.5 rounded-full bg-crema ring-4 ring-paper left-[8px] md:left-auto ${
+                            right ? "md:-left-[7px]" : "md:-right-[7px]"
+                          }`}
+                        />
+
+                        <div
+                          className={`inline-flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.2em] text-caramel ${
+                            right ? "" : "md:flex-row-reverse"
+                          }`}
+                        >
+                          <Icon size={14} />
+                          {c.tag}
+                        </div>
+
+                        <h3 className="mt-4 font-display text-2xl leading-snug tracking-[-0.015em] text-espresso sm:text-[1.85rem]">
+                          {c.title}
+                        </h3>
+                        <p className="mt-4 text-[15px] leading-relaxed text-bark/70">
+                          {c.body}
+                        </p>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <motion.div
+                variants={stagger}
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true, amount: 0.3 }}
+                className="mt-24 overflow-hidden rounded-[28px] bg-espresso lg:mt-32"
+              >
+                <div className="grid gap-0 md:grid-cols-[0.9fr_1.1fr]">
+                  <motion.div variants={fadeUp} className="relative min-h-[300px] md:min-h-[440px]">
+                    <img
+                      src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=900&q=80"
+                      alt="Adaeze Nwosu, founder of caffe Coffee Co."
+                      loading="lazy"
+                      className="absolute inset-0 h-full w-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-espresso/70 via-espresso/10 to-transparent md:bg-gradient-to-r md:from-transparent md:to-espresso/60" />
+                  </motion.div>
+
+                  <motion.div
+                    variants={fadeUp}
+                    className="flex flex-col justify-center px-7 py-12 sm:px-12 lg:px-16 lg:py-16"
+                  >
+                    <span className="text-[11px] font-medium uppercase tracking-[0.24em] text-latte/70">
+                      Founder
+                    </span>
+                    <p className="mt-6 font-display text-[1.4rem] leading-[1.45] tracking-[-0.01em] text-cream sm:text-[1.65rem]">
+                      <span className="text-crema">“</span>
+                      {FOUNDER_QUOTE}
+                      <span className="text-crema">”</span>
+                    </p>
+                    <div className="mt-8 flex items-center gap-4 border-t border-cream/12 pt-7">
+                      <div className="h-11 w-11 shrink-0 overflow-hidden rounded-full ring-1 ring-cream/20">
+                        <img
+                          src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80"
+                          alt=""
+                          loading="lazy"
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <div>
+                        <div className="text-[14px] font-medium text-cream">
+                          Adaeze Nwosu
+                        </div>
+                        <div className="text-[12.5px] text-cream/50">
+                          Founder & Head Roaster
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
+              </motion.div>
+            </div>
+          </section>
+        );
+      }
+
+      /* ------------------------------------------------------------------ */
+      /*  MENU                                                               */
+      /* ------------------------------------------------------------------ */
+
+      function MenuSection() {
+        const categories = Object.keys(MENU);
+        const [active, setActive] = useState(categories[0]);
+        const data = MENU[active];
+
+        return (
+          <section id="menu" className="relative scroll-mt-24 px-6 py-24 sm:px-8 lg:px-12 lg:py-32">
+            <div className="mx-auto max-w-7xl">
+              <div className="flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between">
+                <SectionHead
+                  eyebrow="The menu"
+                  title="Everything is made to order. Nothing sits around."
+                />
+                <motion.div
+                  variants={fadeUp}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true }}
+                  className="flex flex-wrap gap-2"
+                >
+                  {categories.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => setActive(c)}
+                      className={`relative rounded-full px-5 py-2.5 text-[12.5px] font-medium tracking-wide transition-colors duration-300 ${
+                        active === c
+                          ? "text-cream"
+                          : "text-bark/70 hover:text-espresso"
+                      }`}
+                    >
+                      {active === c && (
+                        <motion.span
+                          layoutId="menu-pill"
+                          transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                          className="absolute inset-0 -z-10 rounded-full bg-espresso"
+                        />
+                      )}
+                      {c}
+                    </button>
+                  ))}
+                </motion.div>
+              </div>
+
+              <div className="mt-14 grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-14">
+                <div className="relative">
+                  <div className="relative aspect-[4/5] overflow-hidden rounded-[24px] bg-paper lg:aspect-auto lg:h-full lg:min-h-[520px]">
+                    <AnimatePresence mode="wait">
+                      <motion.img
+                        key={active}
+                        src={data.image}
+                        alt={active}
+                        loading="lazy"
+                        initial={{ opacity: 0, scale: 1.06 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 1.02 }}
+                        transition={{ duration: 0.65, ease: EASE }}
+                        className="absolute inset-0 h-full w-full object-cover"
+                      />
+                    </AnimatePresence>
+                    <div className="absolute inset-0 bg-gradient-to-t from-espresso/75 via-espresso/10 to-transparent" />
+                    <div className="absolute inset-x-0 bottom-0 p-7 lg:p-9">
+                      <AnimatePresence mode="wait">
+                        <motion.p
+                          key={active}
+                          initial={{ opacity: 0, y: 12 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -8 }}
+                          transition={{ duration: 0.45, ease: EASE }}
+                          className="max-w-xs font-display text-lg leading-snug text-cream"
+                        >
+                          {data.blurb}
+                        </motion.p>
+                      </AnimatePresence>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <AnimatePresence mode="wait">
+                    <motion.ul
+                      key={active}
+                      initial="hidden"
+                      animate="show"
+                      exit="hidden"
+                      variants={{
+                        hidden: {},
+                        show: { transition: { staggerChildren: 0.055 } },
+                      }}
+                      className="divide-y divide-espresso/10 border-y border-espresso/10"
+                    >
+                      {data.items.map((item) => (
+                        <motion.li
+                          key={item.name}
+                          variants={{
+                            hidden: { opacity: 0, y: 16 },
+                            show: {
+                              opacity: 1,
+                              y: 0,
+                              transition: { duration: 0.5, ease: EASE },
+                            },
+                          }}
+                          className="group flex items-start justify-between gap-6 py-5 transition-colors duration-300 hover:bg-cream/60"
+                        >
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-display text-[1.15rem] tracking-[-0.01em] text-espresso">
+                                {item.name}
+                              </h4>
+                              <ArrowUpRight
+                                size={14}
+                                className="text-caramel opacity-0 transition-all duration-300 group-hover:translate-x-0.5 group-hover:opacity-100"
+                              />
+                            </div>
+                            <p className="mt-1.5 text-[13.5px] leading-relaxed text-bark/62">
+                              {item.desc}
+                            </p>
+                          </div>
+                          <div className="shrink-0 pt-0.5 font-display text-[1.05rem] text-caramel">
+                            ₦{item.price}
+                          </div>
+                        </motion.li>
+                      ))}
+                    </motion.ul>
+                  </AnimatePresence>
+
+                  <motion.p
+                    variants={fadeUp}
+                    initial="hidden"
+                    whileInView="show"
+                    viewport={{ once: true }}
+                    className="mt-7 text-[12.5px] leading-relaxed text-bark/55"
+                  >
+                    Oat, soy and whole milk always available. Decaf on request — it's
+                    good, we promise. We accept transfer, card and cash.
+                  </motion.p>
+                </div>
+              </div>
+            </div>
+          </section>
+        );
+      }
+
+      /* ------------------------------------------------------------------ */
+      /*  GALLERY — draggable strip                                          */
+      /* ------------------------------------------------------------------ */
+
+      function Gallery() {
+        const viewportRef = useRef(null);
+        const trackRef = useRef(null);
+        const x = useMotionValue(0);
+        const [maxDrag, setMaxDrag] = useState(0);
+        const [dragging, setDragging] = useState(false);
+
+        useEffect(() => {
+          const measure = () => {
+            const track = trackRef.current;
+            const viewport = viewportRef.current;
+            if (!track || !viewport) return;
+            setMaxDrag(Math.max(0, track.scrollWidth - viewport.offsetWidth));
+          };
+          measure();
+          const t = setTimeout(measure, 400);
+          window.addEventListener("resize", measure);
+          return () => {
+            window.removeEventListener("resize", measure);
+            clearTimeout(t);
+          };
+        }, []);
+
+        return (
+          <section
+            id="gallery"
+            className="relative scroll-mt-24 overflow-hidden bg-espresso py-24 lg:py-32"
+          >
+            <div className="pointer-events-none absolute inset-0">
+              <div className="absolute -left-20 top-0 h-[420px] w-[420px] rounded-full bg-caramel/12 blur-[110px]" />
+              <div className="absolute -right-20 bottom-0 h-[380px] w-[380px] rounded-full bg-crema/10 blur-[110px]" />
+            </div>
+
+            <div className="relative mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
+              <div className="flex flex-col gap-8 sm:flex-row sm:items-end sm:justify-between">
+                <SectionHead
+                  eyebrow="@loopcoffee.ng"
+                  title="Moments from the bar."
+                  sub="Drag through the last few weeks. Tag us and we'll probably repost you."
+                  invert
+                />
+                <motion.a
+                  variants={fadeUp}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true }}
+                  href="https://instagram.com"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="group inline-flex shrink-0 items-center gap-2.5 rounded-full border border-cream/20 px-6 py-3 text-[13px] font-medium tracking-wide text-cream transition-all duration-300 hover:border-cream/50 hover:bg-cream/8"
+                >
+                  <Instagram size={15} />
+                  Follow along
+                  <ArrowUpRight
+                    size={14}
+                    className="transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                  />
+                </motion.a>
+              </div>
+            </div>
+
+            <div ref={viewportRef} className="relative mt-14 overflow-hidden">
+              <motion.div
+                ref={trackRef}
+                drag="x"
+                dragConstraints={{ left: -maxDrag, right: 0 }}
+                dragElastic={0.09}
+                style={{ x }}
+                onDragStart={() => setDragging(true)}
+                onDragEnd={() => setDragging(false)}
+                className={`flex gap-5 px-6 sm:px-8 lg:px-12 ${
+                  dragging ? "cursor-grabbing" : "cursor-grab"
+                }`}
+              >
+                {GALLERY.map((photo, i) => (
+                  <motion.figure
+                    key={photo.src}
+                    initial={{ opacity: 0, y: 24 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.2 }}
+                    transition={{ duration: 0.6, ease: EASE, delay: Math.min(i * 0.05, 0.3) }}
+                    className="group relative w-[260px] shrink-0 overflow-hidden rounded-[20px] sm:w-[300px] lg:w-[340px]"
+                  >
+                    <div className="aspect-[4/5] overflow-hidden">
+                      <img
+                        src={photo.src}
+                        alt={photo.caption}
+                        loading="lazy"
+                        draggable={false}
+                        className="h-full w-full select-none object-cover transition-transform duration-[900ms] ease-out group-hover:scale-[1.07]"
+                      />
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-espresso/85 via-espresso/10 to-transparent opacity-80 transition-opacity duration-500 group-hover:opacity-95" />
+                    <figcaption className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-5">
+                      <span className="text-[13px] font-medium leading-snug text-cream">
+                        {photo.caption}
+                      </span>
+                      <span className="flex shrink-0 items-center gap-1.5 text-[11.5px] text-cream/65">
+                        <Star size={12} className="fill-crema text-crema" />
+                        {photo.likes}
+                      </span>
+                    </figcaption>
+                  </motion.figure>
+                ))}
+              </motion.div>
+            </div>
+
+            <div className="mx-auto mt-8 max-w-7xl px-6 sm:px-8 lg:px-12">
+              <div className="flex items-center gap-3 text-[11px] uppercase tracking-[0.2em] text-cream/40">
+                <MoveHorizontal size={13} />
+                Drag to explore
+              </div>
+            </div>
+          </section>
+        );
+      }
+
+      /* ------------------------------------------------------------------ */
+      /*  LOCATIONS                                                          */
+      /* ------------------------------------------------------------------ */
+
+      function Locations() {
+        return (
+          <section
+            id="locations"
+            className="relative scroll-mt-24 px-6 py-24 sm:px-8 lg:px-12 lg:py-32"
+          >
+            <div className="mx-auto max-w-7xl">
+              <SectionHead
+                eyebrow="Find us"
+                title="Three front doors. All a short drive apart."
+                sub="Each café has its own character — same beans, same standards, different corner of the city."
+              />
+
+              <div className="mt-16 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {LOCATIONS.map((loc, i) => (
+                  <motion.article
+                    key={loc.name}
+                    variants={fadeUp}
+                    initial="hidden"
+                    whileInView="show"
+                    viewport={{ once: true, amount: 0.3 }}
+                    transition={{ delay: i * 0.08 }}
+                    className="group relative flex flex-col justify-between overflow-hidden rounded-[24px] border border-espresso/10 bg-cream p-8 transition-all duration-500 hover:-translate-y-1 hover:border-caramel/40 hover:shadow-2xl hover:shadow-caramel/10"
+                  >
+                    <div>
+                      <div className="flex items-start justify-between">
+                        <span className="grid h-11 w-11 place-items-center rounded-full bg-espresso text-cream transition-colors duration-500 group-hover:bg-caramel">
+                          <MapPin size={18} />
+                        </span>
+                        <span className="font-display text-[2.2rem] leading-none text-espresso/8 transition-colors duration-500 group-hover:text-caramel/20">
+                          0{i + 1}
+                        </span>
+                      </div>
+
+                      <h3 className="mt-7 font-display text-[1.6rem] tracking-[-0.02em] text-espresso">
+                        {loc.name}
+                      </h3>
+                      <p className="mt-3 text-[14.5px] leading-relaxed text-bark/70">
+                        {loc.address}
+                      </p>
+                      <p className="mt-5 flex items-center gap-2 text-[13px] text-bark/60">
+                        <Clock size={14} className="text-caramel" />
+                        {loc.hours}
+                      </p>
+                      <p className="mt-4 border-t border-espresso/8 pt-4 text-[13.5px] italic leading-relaxed text-bark/55">
+                        {loc.note}
+                      </p>
+                    </div>
+
+                    <a
+                      href={loc.maps}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-8 inline-flex items-center gap-2 text-[13px] font-medium tracking-wide text-caramel transition-colors hover:text-espresso"
+                    >
+                      Get directions
+                      <ArrowUpRight
+                        size={14}
+                        className="transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                      />
+                    </a>
+                  </motion.article>
+                ))}
+              </div>
+            </div>
+          </section>
+        );
+      }
+
+      /* ------------------------------------------------------------------ */
+      /*  CONTACT                                                            */
+      /* ------------------------------------------------------------------ */
+
+      function Contact() {
+        const [copied, setCopied] = useState(false);
+        const timer = useRef(null);
+
+        const copyPhone = async () => {
+          try {
+            await navigator.clipboard.writeText(PHONE);
+          } catch {
+            const ta = document.createElement("textarea");
+            ta.value = PHONE;
+            ta.style.position = "fixed";
+            ta.style.opacity = "0";
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+              document.execCommand("copy");
+            } catch {}
+            document.body.removeChild(ta);
+          }
+          setCopied(true);
+          clearTimeout(timer.current);
+          timer.current = setTimeout(() => setCopied(false), 2200);
+        };
+
+        useEffect(() => () => clearTimeout(timer.current), []);
+
+        return (
+          <section
+            id="contact"
+            className="relative scroll-mt-24 bg-paper/60 px-6 py-24 sm:px-8 lg:px-12 lg:py-32"
+          >
+            <div className="mx-auto max-w-7xl">
+              <div className="grid gap-14 lg:grid-cols-[1fr_1fr] lg:gap-20">
+                <SectionHead
+                  eyebrow="Say hello"
+                  title="Questions, wholesale, or just a coffee recommendation?"
+                  sub="We answer every message ourselves — usually within a day, always before the second cup."
+                />
+
+                <motion.div
+                  variants={stagger}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true, amount: 0.25 }}
+                  className="space-y-4"
+                >
+                  <motion.div
+                    variants={fadeUp}
+                    className="flex flex-col gap-4 rounded-[22px] border border-espresso/10 bg-cream p-6 sm:flex-row sm:items-center sm:justify-between sm:p-7"
+                  >
+                    <div className="flex items-center gap-4">
+                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-caramel/12 text-caramel">
+                        <Phone size={17} />
+                      </span>
+                      <div>
+                        <div className="text-[11px] uppercase tracking-[0.2em] text-bark/50">
+                          Call us
+                        </div>
+                        <a
+                          href={PHONE_HREF}
+                          className="font-display text-[1.25rem] tracking-[-0.01em] text-espresso transition-colors hover:text-caramel"
+                        >
+                          {PHONE}
+                        </a>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={copyPhone}
+                      aria-label="Copy phone number"
+                      className={`inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-[12.5px] font-medium tracking-wide transition-all duration-300 ${
+                        copied
+                          ? "bg-caramel text-cream"
+                          : "border border-espresso/15 text-espresso hover:border-espresso/40 hover:bg-espresso/5"
+                      }`}
+                    >
+                      <AnimatePresence mode="wait" initial={false}>
+                        {copied ? (
+                          <motion.span
+                            key="copied"
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -6 }}
+                            transition={{ duration: 0.2 }}
+                            className="inline-flex items-center gap-2"
+                          >
+                            <Check size={14} /> Copied!
+                          </motion.span>
+                        ) : (
+                          <motion.span
+                            key="copy"
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -6 }}
+                            transition={{ duration: 0.2 }}
+                            className="inline-flex items-center gap-2"
+                          >
+                            <Copy size={14} /> Copy number
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                    </button>
+                  </motion.div>
+
+                  <motion.a
+                    variants={fadeUp}
+                    href={`mailto:${EMAIL}`}
+                    className="group flex items-center justify-between gap-4 rounded-[22px] border border-espresso/10 bg-cream p-6 transition-all duration-300 hover:border-caramel/40 sm:p-7"
+                  >
+                    <div className="flex items-center gap-4">
+                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-caramel/12 text-caramel">
+                        <Mail size={17} />
+                      </span>
+                      <div>
+                        <div className="text-[11px] uppercase tracking-[0.2em] text-bark/50">
+                          Email
+                        </div>
+                        <div className="font-display text-[1.15rem] tracking-[-0.01em] text-espresso">
+                          {EMAIL}
+                        </div>
+                      </div>
+                    </div>
+                    <ArrowUpRight
+                      size={17}
+                      className="shrink-0 text-bark/35 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-caramel"
+                    />
+                  </motion.a>
+
+                  <motion.div
+                    variants={fadeUp}
+                    className="rounded-[22px] border border-espresso/10 bg-cream p-6 sm:p-7"
+                  >
+                    <div className="flex items-center gap-4">
+                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-caramel/12 text-caramel">
+                        <Clock size={17} />
+                      </span>
+                      <div className="text-[11px] uppercase tracking-[0.2em] text-bark/50">
+                        Roastery hours
+                      </div>
+                    </div>
+                    <dl className="mt-5 space-y-2.5 border-t border-espresso/8 pt-5 text-[13.5px]">
+                      {[
+                        ["Monday – Friday", "7:00am – 4:00pm"],
+                        ["Saturday", "8:00am – 3:00pm"],
+                        ["Sunday", "Closed"],
+                      ].map(([d, h]) => (
+                        <div key={d} className="flex items-center justify-between gap-4">
+                          <dt className="text-bark/65">{d}</dt>
+                          <dd className="font-medium text-espresso">{h}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </motion.div>
+
+                  <motion.div variants={fadeUp} className="flex flex-wrap gap-3 pt-2">
+                    {[
+                      { label: "Instagram", href: "https://instagram.com" },
+                      { label: "Wholesale", href: "#contact" },
+                      { label: "Careers", href: "#contact" },
+                    ].map((s) => (
+                      <a
+                        key={s.label}
+                        href={s.href}
+                        target={s.href.startsWith("http") ? "_blank" : undefined}
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-2 rounded-full border border-espresso/12 px-5 py-2.5 text-[12.5px] font-medium tracking-wide text-bark/75 transition-all duration-300 hover:border-espresso/35 hover:text-espresso"
+                      >
+                        {s.label}
+                        <ArrowUpRight size={13} />
+                      </a>
+                    ))}
+                  </motion.div>
+                </motion.div>
+              </div>
+            </div>
+          </section>
+        );
+      }
+
+      /* ------------------------------------------------------------------ */
+      /*  FOOTER                                                             */
+      /* ------------------------------------------------------------------ */
+
+      function Footer() {
+        return (
+          <footer className="border-t border-espresso/10 bg-cream px-6 py-12 sm:px-8 lg:px-12">
+            <div className="mx-auto flex max-w-7xl flex-col gap-8 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-3">
+                <span className="grid h-9 w-9 place-items-center rounded-full bg-espresso text-cream">
+                  <Coffee size={16} />
+                </span>
+                <div>
+                  <div className="font-display text-[1.05rem] font-semibold tracking-[-0.01em] text-espresso">
+                    caffe Coffee Co.
+                  </div>
+                  <div className="text-[12px] text-bark/55">
+                    Lagos, Nigeria · Est. 2016
+                  </div>
+                </div>
+              </div>
+
+              <nav className="flex flex-wrap gap-x-7 gap-y-3">
+                {NAV_LINKS.map((l) => (
+                  <a
+                    key={l.href}
+                    href={l.href}
+                    className="text-[12.5px] font-medium text-bark/65 transition-colors hover:text-espresso"
+                  >
+                    {l.label}
+                  </a>
+                ))}
+              </nav>
+
+              <div className="text-[12px] text-bark/45">
+                © {new Date().getFullYear()} caffe Coffee Co.
+              </div>
+            </div>
+          </footer>
+        );
+      }
+
+      /* ------------------------------------------------------------------ */
+      /*  APP                                                                */
+      /* ------------------------------------------------------------------ */
+
+      function App() {
+        useEffect(() => {
+          const boot = document.getElementById("boot");
+          if (boot) {
+            requestAnimationFrame(() => {
+              boot.classList.add("hide");
+              setTimeout(() => boot.remove(), 600);
+            });
+          }
+        }, []);
+
+        return (
+          <div className="min-h-screen bg-cream font-sans text-espresso antialiased">
+            <ScrollBar />
+            <Nav />
+            <main>
+              <Hero />
+              <Story />
+              <MenuSection />
+              <Gallery />
+              <Locations />
+              <Contact />
+            </main>
+            <Footer />
+          </div>
+        );
+      }
+
+      const container = document.getElementById("root");
+      createRoot(container).render(<App />);
+    </script>
+  </body>
+</html>
